@@ -1,0 +1,11 @@
+{
+  "name": "grill-kit",
+  "version": "0.1.0",
+  "description": "Grill your plans one question at a time, with clickable answer cards and a live decision log.",
+  "author": {
+    "name": "GingerCowboy"
+  },
+  "repository": "https://github.com/GingerCowboy/grill-kit",
+  "license": "MIT",
+  "keywords": ["grill", "interview", "planning", "design", "decisions"]
+}
