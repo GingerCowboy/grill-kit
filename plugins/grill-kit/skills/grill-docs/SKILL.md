@@ -1,6 +1,6 @@
 ---
 name: grill-docs
-description: Grill me one question at a time, and write a glossary (CONTEXT.md) and decision records (ADRs) as answers settle.
+description: Grill me in fast rounds of answer cards, and write a glossary (CONTEXT.md) and decision records (ADRs) as answers settle.
 disable-model-invocation: true
 argument-hint: <plan, idea, or file to grill>
 ---
