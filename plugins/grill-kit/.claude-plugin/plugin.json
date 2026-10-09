@@ -1,7 +1,7 @@
 {
   "name": "grill-kit",
-  "version": "0.2.0",
-  "description": "Grill your plans in fast rounds of clickable answer cards, one question on screen at a time, with a live decision log.",
+  "version": "0.3.0",
+  "description": "Grill your plans in fast rounds of clickable answer cards, one question on screen at a time, with a live decision board.",
   "author": {
     "name": "GingerCowboy"
   },

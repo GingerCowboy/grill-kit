@@ -5,7 +5,7 @@ disable-model-invocation: true
 argument-hint: <plan, idea, or file to grill>
 ---
 
-Read `../grill/SKILL.md` (relative to this skill's base directory) and run that interview in full on the plan the user named. Layer **domain modeling** on top of it:
+Read `../grill/SKILL.md` (relative to this skill's base directory) and run that interview in full on the plan the user named; the files it names (`board.html`, `LOG.md`) are in that `../grill/` directory. Layer **domain modeling** on top of it:
 
 - If the `domain-modeling` skill is available, invoke it now and apply it for the whole interview.
 - Otherwise, apply these rules:
@@ -13,4 +13,4 @@ Read `../grill/SKILL.md` (relative to this skill's base directory) and run that 
   - **Sharpen terms.** When the user uses a fuzzy, overloaded, or conflicting term, make the next card a choice between precise meanings (for example, "By 'account', do you mean Customer or User?").
   - **ADRs.** Offer an ADR only for a decision that is hard to reverse, surprising without context, and the result of a real trade-off. Offer it as a card; on yes, write `docs/adr/<NNNN>-<slug>.md` with **Context**, **Decision**, and **Consequences** sections.
 
-Add a `## Docs written` section to the log listing every glossary term and ADR you write, each with its file path.
+Record every glossary term and ADR you write as a board fact (`text`: `Glossary: <term>` or `ADR: <title>`; `source`: its file path), or, with a Markdown log, under a `## Docs written` section.

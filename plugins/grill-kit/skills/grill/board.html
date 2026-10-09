@@ -1,0 +1,254 @@
+<title>Grill Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,600..800&family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: one reading column, a case file — what's asked next on top, then the decision record, then the facts it rests on */
+:root {
+  --paper: #EEF1F4; --card: #FAFBFC; --ink: #17202B; --muted: #586374; --line: #D3D9E0;
+  --flame: #2450C8; --flame-soft: #E3EAFB; --warn: #8F5400; --warn-soft: #F6EAD5; --ok: #1D7149; --ok-soft: #DDF0E5;
+  --display: "Archivo", "Arial Narrow", system-ui, sans-serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper: #0E1217; --card: #161B22; --ink: #E5E9EF; --muted: #97A2B1; --line: #2A323D;
+  --flame: #86A8FF; --flame-soft: #1B2747; --warn: #E3AA55; --warn-soft: #33270F; --ok: #5CC892; --ok-soft: #12291D;
+  color-scheme: dark } }
+:root[data-theme="dark"] {
+  --paper: #0E1217; --card: #161B22; --ink: #E5E9EF; --muted: #97A2B1; --line: #2A323D;
+  --flame: #86A8FF; --flame-soft: #1B2747; --warn: #E3AA55; --warn-soft: #33270F; --ok: #5CC892; --ok-soft: #12291D;
+  color-scheme: dark }
+
+body { background: var(--paper); color: var(--ink); font: 400 15px/1.55 var(--body); }
+.wrap { max-width: 44rem; margin: 0 auto; padding-inline: 16px; padding-block: 20px 48px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px; }
+.stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px; min-width: 0; }
+a { color: var(--flame); text-underline-offset: 2px; }
+a:focus-visible, select:focus-visible { outline: 2px solid var(--flame); outline-offset: 2px; }
+
+.top { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; min-width: 0; }
+.bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; }
+.eyebrow { font: 600 12px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.pick select { width: 100%; font: 500 13px/1.2 var(--body); color: var(--ink); background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; text-overflow: ellipsis; }
+.pick { flex: 0 1 18rem; min-width: 0; }
+h1 { margin: 0; font: 800 clamp(26px, 6vw, 38px)/1.08 var(--display); font-stretch: 82%; letter-spacing: -.01em; text-wrap: balance; }
+.meta { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+.pill { display: inline-flex; align-items: center; gap: 6px; font: 600 12px/1 var(--body); padding: 5px 9px; border-radius: 999px; background: var(--flame-soft); color: var(--flame); }
+.pill.done { background: var(--ok-soft); color: var(--ok); }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+
+section { display: grid; gap: 10px; min-width: 0; }
+h2 { margin: 0; display: flex; align-items: baseline; gap: 8px; font: 700 13px/1.2 var(--display); font-stretch: 90%; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+h2 .n { font: 500 12px/1 var(--mono); letter-spacing: 0; }
+h2 .note { font: 400 12px/1 var(--body); letter-spacing: 0; text-transform: none; }
+
+.summary { background: var(--card); border: 1px solid var(--line); border-left: 3px solid var(--ok); border-radius: 8px; padding: 14px 16px; }
+.summary ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
+
+.queue { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.queue li { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: start; background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; min-width: 0; }
+.queue .mark { margin-top: 7px; width: 8px; height: 8px; border-radius: 2px; background: var(--flame); }
+.queue.waiting .mark { background: transparent; border: 1.5px solid var(--muted); }
+.queue.deferred .mark { background: var(--line); }
+.queue .txt { min-width: 0; overflow-wrap: anywhere; }
+.needs { display: flex; flex-wrap: wrap; gap: 4px 6px; margin-top: 4px; font-size: 12px; color: var(--muted); }
+
+.decisions { display: grid; gap: 10px; }
+.dec { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: grid; gap: 6px; min-width: 0; }
+.dec.challenge { border-left: 3px solid var(--warn); }
+.dec.superseded { opacity: .62; }
+.dec-head { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+.stamp { flex: none; font: 500 12px/1 var(--mono); color: var(--flame); border: 1px solid currentColor; border-radius: 4px; padding: 3px 5px; font-variant-numeric: tabular-nums; }
+.dec h3 { margin: 0; font: 700 16px/1.3 var(--display); font-stretch: 92%; min-width: 0; overflow-wrap: anywhere; }
+.ans { margin: 0; font-weight: 500; overflow-wrap: anywhere; }
+.why, .opened { margin: 0; color: var(--muted); font-size: 14px; overflow-wrap: anywhere; }
+.lbl { font: 600 11px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; margin-right: 6px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font: 500 12px/1 var(--body); padding: 4px 8px; border-radius: 999px; background: var(--paper); color: var(--muted); border: 1px solid var(--line); }
+.chip.warn { background: var(--warn-soft); color: var(--warn); border-color: transparent; }
+.chip.flame { background: var(--flame-soft); color: var(--flame); border-color: transparent; }
+
+.facts { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.facts li { border-bottom: 1px solid var(--line); padding-bottom: 8px; min-width: 0; overflow-wrap: anywhere; }
+.src { display: block; margin-top: 2px; font: 500 12px/1.4 var(--mono); color: var(--muted); overflow-wrap: anywhere; }
+
+.empty { background: var(--card); border: 1px dashed var(--line); border-radius: 8px; padding: 18px 16px; color: var(--muted); }
+.empty strong { color: var(--ink); display: block; margin-bottom: 4px; }
+code { font: 500 13px/1.4 var(--mono); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .pill.flash .dot { animation: pulse 1.4s ease-out 2; }
+  @keyframes pulse { 0% { box-shadow: 0 0 0 0 var(--flame); } 100% { box-shadow: 0 0 0 7px transparent; } }
+  .dec.new { animation: arrive 2.4s ease-out; }
+  @keyframes arrive { from { background: var(--flame-soft); } to { background: var(--card); } }
+}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="bar">
+      <span class="eyebrow">Grill board</span>
+      <label class="pick" id="pick" hidden><span class="sr">Session</span><select id="session"></select></label>
+    </div>
+    <h1 id="topic">Grill board</h1>
+    <p class="meta" id="meta"></p>
+  </header>
+  <main id="main" class="stack"></main>
+</div>
+
+<script>
+const S = { mode: "loading", db: null, sessions: [], sid: null, items: [], answers: [], facts: [], unsubs: [], seen: null, flashUntil: 0 };
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const saved = { get() { try { return localStorage.getItem("grill.sid"); } catch (e) { return null; } },
+  set(v) { try { v ? localStorage.setItem("grill.sid", v) : localStorage.removeItem("grill.sid"); } catch (e) {} } };
+const qn = (n) => "Q" + String(n ?? "?").padStart(2, "0");
+
+function derive() {
+  const answers = [...S.answers].sort((a, b) => (a.n || 0) - (b.n || 0));
+  const latest = new Map();
+  answers.forEach((a) => a.key && latest.set(a.key, a));
+  const resolved = new Set(), deferred = new Set(), closed = new Set();
+  latest.forEach((a, k) => (a.kind === "deferred" ? deferred : resolved).add(k));
+  answers.forEach((a) => (a.closes || []).forEach((k) => closed.add(k)));
+  S.facts.forEach((f) => (f.resolves || []).forEach((k) => resolved.add(k)));
+  const byKey = new Map(S.items.map((i) => [i.id, i]));
+  const name = (k) => latest.get(k)?.title || byKey.get(k)?.text || k;
+  const live = S.items.filter((i) => !resolved.has(i.id) && !closed.has(i.id) && !deferred.has(i.id));
+  const ready = (i) => (i.needs || []).every((k) => resolved.has(k));
+  const upNext = live.filter((i) => i.kind !== "lookup" && ready(i));
+  const waiting = live.filter((i) => i.kind === "lookup" || !ready(i))
+    .map((i) => ({ ...i, blockers: i.kind === "lookup" ? [] : (i.needs || []).filter((k) => !resolved.has(k)).map(name) }));
+  const deferredList = [...deferred].map((k) => ({ id: k, text: byKey.get(k)?.text || name(k), q: latest.get(k)?.n }));
+  const decided = answers.filter((a) => a.kind !== "deferred");
+  const opened = (k) => S.items.filter((i) => (i.needs || []).includes(k)).map((i) => i.text);
+  const round = Math.max(0, ...answers.map((a) => a.round || 0));
+  return { answers: decided, latest, upNext, waiting, deferredList, opened, round };
+}
+
+function srcHtml(src) {
+  if (!src) return "";
+  if (/^https?:\/\//i.test(src)) {
+    const label = src.replace(/^https?:\/\/(www\.)?/i, "").replace(/\/$/, "");
+    return `<a class="src" href="${esc(src)}" target="_blank" rel="noopener noreferrer">${esc(label)}</a>`;
+  }
+  return `<span class="src">${esc(src)}</span>`;
+}
+
+function render() {
+  const main = document.getElementById("main"), meta = document.getElementById("meta"), topic = document.getElementById("topic");
+  const pick = document.getElementById("pick"), sel = document.getElementById("session");
+  const empty = (title, body) => `<div class="empty"><strong>${title}</strong>${body}</div>`;
+
+  if (S.mode !== "ready" || !S.sessions.length) {
+    pick.hidden = true; meta.innerHTML = ""; topic.textContent = "Grill board";
+    main.innerHTML =
+      S.mode === "loading" ? empty("Loading sessions…", "Your grilling sessions appear here as you answer them.") :
+      S.mode === "nodb" ? empty("Open this board on claude.ai", "It reads live grilling sessions from its database, which only loads inside the Claude app or claude.ai.") :
+      S.mode === "error" ? empty("The board can't reach its data", `Reload the page to try again${S.err ? ` (<code>${esc(S.err)}</code>)` : ""}.`) :
+      empty("No grilling sessions yet", "Run <code>/grill-kit:grill &lt;your plan&gt;</code> in Claude Code. Each round you answer shows up here, live.");
+    return;
+  }
+
+  pick.hidden = S.sessions.length < 2;
+  sel.innerHTML = S.sessions.map((s) => `<option value="${esc(s.id)}"${s.id === S.sid ? " selected" : ""}>${esc(s.topic || s.id)}${s.started ? " · " + esc(s.started) : ""}</option>`).join("");
+
+  const ses = S.sessions.find((s) => s.id === S.sid) || {};
+  const d = derive();
+  const done = ses.status === "done";
+  topic.textContent = ses.topic || S.sid;
+  document.title = (ses.topic ? ses.topic + " · " : "") + "Grill Board";
+  const flash = Date.now() < S.flashUntil ? " flash" : "";
+  meta.innerHTML = [
+    `<span class="pill${done ? " done" : ""}${flash}"><span class="dot"></span>${done ? "Done" : "In progress"}</span>`,
+    d.round ? `<span>Round ${d.round}</span>` : "",
+    `<span>${d.answers.length} decided · ${d.upNext.length + d.waiting.length} open · ${d.deferredList.length} deferred</span>`,
+    ses.started ? `<span>Started ${esc(ses.started)}</span>` : "",
+  ].join("");
+
+  const out = [];
+  if (done && Array.isArray(ses.summary) && ses.summary.length) {
+    out.push(`<section><h2>Summary</h2><div class="summary"><ul>${ses.summary.map((b) => `<li>${esc(b)}</li>`).join("")}</ul></div></section>`);
+  }
+  if (d.upNext.length) {
+    out.push(`<section><h2>Up next <span class="n">${d.upNext.length}</span></h2><ul class="queue">${d.upNext.map((i) =>
+      `<li><span class="mark"></span><div class="txt">${esc(i.text)}</div></li>`).join("")}</ul></section>`);
+  }
+  if (d.waiting.length) {
+    out.push(`<section><h2>Waiting on <span class="n">${d.waiting.length}</span></h2><ul class="queue waiting">${d.waiting.map((i) =>
+      `<li><span class="mark"></span><div class="txt">${esc(i.text)}<div class="needs">${
+        i.kind === "lookup" ? `<span class="chip flame">Fact lookup running</span>` : i.blockers.map((b) => `<span class="chip">needs ${esc(b)}</span>`).join("")
+      }</div></div></li>`).join("")}</ul></section>`);
+  }
+  if (d.deferredList.length) {
+    out.push(`<section><h2>Deferred <span class="n">${d.deferredList.length}</span></h2><ul class="queue deferred">${d.deferredList.map((i) =>
+      `<li><span class="mark"></span><div class="txt">${i.q ? `<span class="stamp">${qn(i.q)}</span> ` : ""}${esc(i.text)}</div></li>`).join("")}</ul></section>`);
+  }
+  if (!done && !d.upNext.length && !d.waiting.length && !d.answers.length) {
+    out.push(`<section>${empty("Waiting for the first round", "The first questions appear here as soon as Claude asks them.")}</section>`);
+  }
+  if (d.answers.length) {
+    const list = done ? d.answers : [...d.answers].reverse();
+    out.push(`<section><h2>Decisions <span class="n">${d.answers.length}</span><span class="note">${done ? "in the order asked" : "newest first"}</span></h2><div class="decisions">${list.map((a) => {
+      const superseded = a.key && d.latest.get(a.key) !== a;
+      const revisedBy = superseded ? d.latest.get(a.key) : null;
+      const opened = a.key && !superseded ? d.opened(a.key) : [];
+      const isNew = S.seen && !S.seen.has(a.id);
+      return `<article class="dec${a.kind === "challenge" ? " challenge" : ""}${superseded ? " superseded" : ""}${isNew ? " new" : ""}">
+        <div class="dec-head"><span class="stamp">${qn(a.n)}</span><h3>${esc(a.title || a.key)}</h3></div>
+        <p class="ans">${esc(a.answer)}</p>
+        ${a.why ? `<p class="why"><span class="lbl">Why</span>${esc(a.why)}</p>` : ""}
+        <div class="chips">${a.kind === "challenge" ? `<span class="chip warn">Challenge</span>` : ""}${a.took ? `<span class="chip flame">Took recommendation</span>` : `<span class="chip">Your call</span>`}${revisedBy ? `<span class="chip">Revised in ${qn(revisedBy.n)}</span>` : ""}</div>
+        ${opened.length ? `<p class="opened"><span class="lbl">Opened</span>${opened.map(esc).join(" · ")}</p>` : ""}
+      </article>`;
+    }).join("")}</div></section>`);
+  }
+  if (S.facts.length) {
+    const facts = [...S.facts].sort((a, b) => a.id.localeCompare(b.id));
+    out.push(`<section><h2>Facts <span class="n">${facts.length}</span><span class="note">found by Claude, with sources</span></h2><ul class="facts">${facts.map((f) =>
+      `<li>${esc(f.text)}${srcHtml(f.source)}</li>`).join("")}</ul></section>`);
+  }
+  main.innerHTML = out.join("");
+}
+
+function select(sid) {
+  if (sid === S.sid) return;
+  S.unsubs.forEach((u) => u()); S.unsubs = [];
+  S.sid = sid; S.items = []; S.answers = []; S.facts = []; S.seen = null;
+  if (!sid) return render();
+  const base = S.db.doc("sessions/" + sid);
+  const sub = (name) => base.collection(name).onSnapshot((snap) => {
+    S[name] = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    if (name === "answers") {
+      if (S.seen === null) S.seen = new Set(S.answers.map((a) => a.id));
+      else if (snap.docChanges().some((c) => c.type === "added")) { S.flashUntil = Date.now() + 3000; setTimeout(render, 3100); }
+      setTimeout(() => S.answers.forEach((a) => S.seen && S.seen.add(a.id)), 2500);
+    }
+    render();
+  }, (e) => { S.mode = "error"; S.err = e && e.code; render(); });
+  S.unsubs.push(sub("items"), sub("answers"), sub("facts"));
+  render();
+}
+
+document.getElementById("session").addEventListener("change", (e) => {
+  const sid = e.target.value;
+  saved.set(S.sessions[0] && sid === S.sessions[0].id ? null : sid);
+  select(sid);
+});
+
+async function boot() {
+  render();
+  let db = null;
+  try { db = window.claude && typeof window.claude.use === "function" ? await window.claude.use("db") : null; } catch (e) { db = null; }
+  if (!db) { S.mode = "nodb"; return render(); }
+  S.db = db;
+  db.collection("sessions").orderBy("started", "desc").limit(100).onSnapshot((snap) => {
+    S.sessions = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    S.mode = "ready";
+    const pinned = saved.get();
+    const want = pinned && S.sessions.some((s) => s.id === pinned) ? pinned : S.sessions[0] && S.sessions[0].id;
+    if (want !== S.sid) select(want); else render();
+  }, (e) => { S.mode = "error"; S.err = e && e.code; render(); });
+}
+boot();
+</script>
